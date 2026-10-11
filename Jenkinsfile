@@ -75,6 +75,14 @@ stage('Push Docker image') {
         }
     }
 }
+stage('Approve deployment') {
+    steps {
+        timeout(time: 10, unit: 'MINUTES') {
+            input message: 'Trien khai phien ban moi?',
+                  ok: 'Deploy'
+        }
+    }
+}
         stage('Deploy and verify') {
             steps {
                 sh '''
