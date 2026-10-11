@@ -27,7 +27,7 @@ pipeline {
 
         stage('Build Docker image') {
             steps {
-                sh 'docker build -t docker-demo:jenkins-$BUILD_NUMBER .'
+               sh 'docker build -f Dockerfile.jenkins -t docker-demo:jenkins-$BUILD_NUMBER .'
             }
         }
 
