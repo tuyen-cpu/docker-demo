@@ -46,7 +46,35 @@ pipeline {
                 sh 'docker build -f Dockerfile.jenkins -t docker-demo:jenkins-$BUILD_NUMBER .'
             }
         }
+stage('Push Docker image') {
+    steps {
+        withCredentials([
+            usernamePassword(
+                credentialsId: 'dockerhub-credentials',
+                usernameVariable: 'DOCKERHUB_USER',
+                passwordVariable: 'DOCKERHUB_TOKEN'
+            )
+        ]) {
+            sh '''
+                set -eu
+                set +x
 
+                export DOCKER_CONFIG=$(mktemp -d)
+                trap 'rm -rf "$DOCKER_CONFIG"' EXIT
+
+                printf '%s' "$DOCKERHUB_TOKEN" |
+                    docker login --username "$DOCKERHUB_USER" --password-stdin
+
+                docker tag \
+                    "docker-demo:jenkins-$BUILD_NUMBER" \
+                    "tuyen326326/docker-demo:jenkins-$BUILD_NUMBER"
+
+                docker push \
+                    "tuyen326326/docker-demo:jenkins-$BUILD_NUMBER"
+            '''
+        }
+    }
+}
         stage('Deploy and verify') {
             steps {
                 sh '''
