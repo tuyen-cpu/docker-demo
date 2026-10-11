@@ -45,6 +45,31 @@ pipeline {
                 '''
             }
         }
+        stage('Verify application') {
+    steps {
+        sh '''
+            ready=false
+
+            for attempt in $(seq 1 30); do
+                if docker exec docker-demo-deployed \
+                    bash -c 'exec 3<>/dev/tcp/127.0.0.1/8080
+                    printf "GET /hello HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n" >&3
+                    head -n 1 <&3' \
+                    | grep -q 'HTTP/1.1 200'; then
+                    ready=true
+                    break
+                fi
+
+                sleep 2
+            done
+
+            if [ "$ready" != true ]; then
+                docker logs --tail 50 docker-demo-deployed
+                exit 1
+            fi
+        '''
+    }
+}
     }
 
     post {
