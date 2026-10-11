@@ -6,6 +6,22 @@ pipeline {
     }
 
     stages {
+        stage('Check credential') {
+    steps {
+        withCredentials([
+            string(
+                credentialsId: 'demo-api-token',
+                variable: 'API_TOKEN'
+            )
+        ]) {
+            sh '''
+                set +x
+                test -n "$API_TOKEN"
+                echo "Da nap credential, khong in gia tri."
+            '''
+        }
+    }
+}
         stage('Test') {
             steps {
                 sh 'chmod +x mvnw'
